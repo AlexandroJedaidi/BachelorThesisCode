@@ -3,7 +3,7 @@
 ## What this is
 
 This repository implements a neural net, runge-kutta and BDF methods to solve a few ordinary differential equations. This code is 
-based on [this]([https://alexandrojedaidi.github.io/BachelorLatex/](https://alexandrojedaidi.github.io/BachelorLatex/main.pdf)) 
+based on [this](https://alexandrojedaidi.github.io/BachelorLatex/main.pdf)
 bachelor thesis.
 
 ## Get it running
