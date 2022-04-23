@@ -1,6 +1,8 @@
 import os
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from itertools import count
 import numpy as np
 import numpy.version
 import pandas as pd
@@ -11,11 +13,18 @@ import neural_net as nn
 from math import e
 from ODE import ODE
 
-# -------------------------------------------- initial conditions-------------------------------------------------------
 DTYPE = "float32"
+
+# -------------------------------------------- configurations----------------------------------------------------------
+
+
 ode_name = 'stiff'  # ['harmonicoscillator', 'reboundpendulum', 'stiff']
 preset = True
 save_data = not preset
+
+epochs = 100000
+
+# -------------------------------------------- initial conditions-------------------------------------------------------
 
 # time start and ending
 t_0 = 0.
@@ -74,7 +83,7 @@ if ode_name == 'reboundpendulum':
 # ----------------------------------------init neural net---------------------------------------------------------------
 
 set_b = True
-if ode_name == 'harmonicoscillator' or ode_name == 'stiff':
+if ode_name == 'harmonicoscillator':
     set_b = False
 neural_net = nn.NN(
     time_interval=[t_0, t_f],
@@ -84,7 +93,6 @@ neural_net = nn.NN(
 )
 neural_net.set_functions()
 
-epochs = 10
 iterations = np.linspace(0, epochs, num=epochs)
 
 plot_path = "Output/" + ode_name + "/"
@@ -146,7 +154,6 @@ def initialize_neural_net(load_pretrained, save_new_data, neural_net_model, laye
 
     return loss_array, error_array, prediction, calc_time
 
-
 def plotting(loss_data, error_data, predict_data, system_name):
     """ handles different plotting cases for given ODE´s
     :param loss_data: array
@@ -163,8 +170,10 @@ def plotting(loss_data, error_data, predict_data, system_name):
     if system_name == 'stiff':
         nn_1 = predict_data[:, 0:1]
         nn_2 = predict_data[:, 1:2]
+
         rk_norm = np.linalg.norm(np.subtract([approximation[0], approximation[1]], ode.solution(approximation[2]))
                                  , axis=0)
+
         bdf_norm = np.linalg.norm(np.subtract([approximation[3], approximation[4]], ode.solution(approximation[5]))
                                   , axis=0)
 
@@ -182,7 +191,7 @@ def plotting(loss_data, error_data, predict_data, system_name):
 
         avr_error = pd.DataFrame({'error': error_data}).rolling(1000).mean()
         plt.yscale('log', base=10)
-        plt.xscale('log', base=10)
+        # plt.xscale('log', base=10)
         plt.plot(avr_error, label="ML-Fehler")
         plt.legend(loc=1, prop={'size': 10})
         plt.xlabel('Epochen')
@@ -194,11 +203,11 @@ def plotting(loss_data, error_data, predict_data, system_name):
 
         avr_loss = pd.DataFrame({'loss': loss_data}).rolling(1000).mean()
         plt.yscale('log', base=10)
-        plt.xscale('log', base=10)
-        plt.plot(avr_loss, label="ML Loss")
+        # plt.xscale('log', base=10)
+        plt.plot(avr_loss, label="Kostenfunktion")
         plt.legend(loc=1, prop={'size': 10})
         plt.xlabel('Epochen')
-        plt.ylabel('loss')
+        plt.ylabel(r'$\mathcal{C}$')
         plt.title('ML-Kostenfunktion')
         plt.savefig(path + 'ML_Loss' + '.png')
 
@@ -222,11 +231,11 @@ def plotting(loss_data, error_data, predict_data, system_name):
             i += 1
 
         plt.yscale('log', base=10)
-        plt.xscale('log', base=10)
+        # plt.xscale('log', base=10)
         plt.legend(loc=3, prop={'size': 10})
-        plt.ylabel('Loss')
+        plt.ylabel(r'$\mathcal{C}$')
         plt.xlabel('Epochen')
-        plt.title('Machine Learning Kostenfunktion')
+        plt.title('Kostenfunktion')
         plt.savefig(path + 'Loss_' + str(len(loss_data)) + '.png')
 
         plt.clf()
@@ -237,11 +246,11 @@ def plotting(loss_data, error_data, predict_data, system_name):
             i += 1
 
         plt.yscale('log', base=10)
-        plt.xscale('log', base=10)
+        # plt.xscale('log', base=10)
         plt.legend(loc=3, prop={'size': 10})
         plt.ylabel('$\Vert \cdot \Vert_2$-Fehler')
         plt.xlabel('Epochen')
-        plt.title('Machine Learning Fehler')
+        plt.title('Globaler Fehler')
         plt.savefig(path + 'error_' + str(len(loss_data)) + '.png')
 
         plt.clf()
@@ -303,7 +312,7 @@ def plotting(loss_data, error_data, predict_data, system_name):
         nn_2 = predict_data[:, 1:2]
         plt.plot(nn_1, nn_2, label="ML")
         plt.plot(approximation[0], approximation[1], label="RK")
-        plt.plot(approximation2[0], approximation2[1], label="RK mit niedriger Schrittweite")
+        plt.plot(approximation2[0], approximation2[1], label="Referenzlösung")
         plt.legend(loc=2, prop={'size': 10})
         plt.title('Phasenraum des gedämpften Pendels')
         plt.xlabel(r'$\theta$')
@@ -313,11 +322,11 @@ def plotting(loss_data, error_data, predict_data, system_name):
         plt.clf()
 
         plt.yscale('log', base=10)
-        plt.xscale('log', base=10)
+        # plt.xscale('log', base=10)
         plt.plot(iterations, loss_data, label="ML Loss")
         plt.legend(loc=1, prop={'size': 10})
         plt.xlabel('Epochen')
-        plt.ylabel('loss')
+        plt.ylabel(r'$\mathcal{C}$')
         plt.title('Kostenfunktion')
         plt.savefig(path + 'ML_Loss' + '.png')
 
@@ -325,7 +334,7 @@ def plotting(loss_data, error_data, predict_data, system_name):
 
         plt.plot(t, nn_1, label="ML")
         plt.plot(approximation[2], approximation[0], label="RK")
-        plt.plot(approximation2[2], approximation2[0], label="RK mit geringer Schrittweite")
+        plt.plot(approximation2[2], approximation2[0], label="Referenzlösung")
         plt.legend(loc=1, prop={'size': 10})
         plt.xlabel('$t$')
         plt.ylabel(r'$\theta$')
@@ -336,11 +345,11 @@ def plotting(loss_data, error_data, predict_data, system_name):
 
         avr_loss = pd.DataFrame({'loss': loss_data}).rolling(12000).mean()
         plt.yscale('log', base=10)
-        plt.xscale('log', base=10)
+        # plt.xscale('log', base=10)
         plt.plot(avr_loss, label="ML Loss")
         plt.legend(loc=1, prop={'size': 10})
         plt.xlabel('Epochen')
-        plt.ylabel('loss')
+        plt.ylabel(r'$\mathcal{C}$')
         plt.title('Kostenfunktion')
         plt.savefig(path + 'avr_loss' + '.png')
 
