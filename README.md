@@ -6,6 +6,10 @@ This repository implements a neural net, runge-kutta and BDF methods to solve a 
 based on [this](https://alexandrojedaidi.github.io/BachelorLatex/main.pdf)
 bachelor thesis.
 
+## How it works
+
+This program uses the libraries numpy and tensorflow to create an runge-kutta-method, an BDF-method and an neural net to solve one of three given ODE's. For the runge-kutta and BDF-method, scipy functions found [here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.RK45.html) and [here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.BDF.html) are used. The neural net gets constructed with basic tensorflow functions and the theory is based on the paper found [here](https://arxiv.org/pdf/2006.14372.pdf).
+
 ## Get it running
 
 requirements (libraries): tensorflow, numpy, pandas, matplotlib
